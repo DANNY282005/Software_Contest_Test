@@ -58,7 +58,7 @@ if ($testResult) {
                 <div class="test-result">
                     <h2>Thank You!</h2>
                     <p>You have successfully completed the test.</p>
-                    <p class="score-note">Your results will be available soon.</p>
+                    <p class="score-note">Your results will be anounced soon.</p>
                     
                     <button id="viewAnswersBtn" class="view-answers-btn">View Your Answers</button>
                     
