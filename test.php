@@ -42,8 +42,8 @@ $questions = array_slice($questions, 0, 10);
     <div class="container">
         <div class="dashboard">
             <div class="header">
-                <h1>Software Contest</h1>
-                <div id="timer">Time Remaining: <span id="time">1:00:00</span></div>
+                <h1>Online Test</h1>
+                <div id="timer">Time Remaining: <span id="time">60:00</span></div>
             </div>
             
             <form id="testForm" action="submit_test.php" method="POST">
@@ -79,20 +79,16 @@ $questions = array_slice($questions, 0, 10);
                 <?php endforeach; ?>
 
                 <div class="navigation-buttons">
-                    <button type="button" id="prevBtn" onclick="navigate(-1)" style="display: none;">Previous</button>
                     <div class="progress-indicator">
                         Question <span id="currentQuestion">1</span> of <?php echo count($questions); ?>
                     </div>
-                    <button type="button" id="nextBtn" onclick="navigate(1)">Next</button>
+                    <button type="button" id="nextBtn" onclick="validateAndNavigate()" style="display: none;">Next</button>
                     <button type="button" id="submitBtn" onclick="validateAndSubmit()" style="display: none;">Submit Test</button>
                 </div>
             </form>
 
             <div id="warningMessage" class="warning-message" style="display: none;">
-                Please answer all questions before submitting the test.
-                <div class="unanswered-questions">
-                    Unanswered Questions: <span id="unansweredList"></span>
-                </div>
+                Please answer the current question before proceeding.
             </div>
         </div>
     </div>
@@ -106,38 +102,32 @@ $questions = array_slice($questions, 0, 10);
             answeredQuestions.add(questionIndex);
             document.querySelector(`#question${questionIndex}`).classList.add('answered');
             document.getElementById('warningMessage').style.display = 'none';
-        }
-
-        function validateAndSubmit() {
-            const unansweredQuestions = [];
-            for(let i = 0; i < totalQuestions; i++) {
-                if(!answeredQuestions.has(i)) {
-                    unansweredQuestions.push(i + 1);
-                }
-            }
-
-            if(unansweredQuestions.length > 0) {
-                const warningMsg = document.getElementById('warningMessage');
-                document.getElementById('unansweredList').textContent = unansweredQuestions.join(', ');
-                warningMsg.style.display = 'block';
-                warningMsg.scrollIntoView({ behavior: 'smooth' });
+            
+            // Show next button when question is answered
+            if (currentQuestion < totalQuestions - 1) {
+                document.getElementById('nextBtn').style.display = 'block';
             } else {
-                document.getElementById('testForm').submit();
+                document.getElementById('submitBtn').style.display = 'block';
             }
         }
 
-        function navigate(direction) {
+        function validateAndNavigate() {
+            if (!answeredQuestions.has(currentQuestion)) {
+                document.getElementById('warningMessage').style.display = 'block';
+                document.getElementById('warningMessage').scrollIntoView({ behavior: 'smooth' });
+                return;
+            }
+
             const currentCard = document.querySelector(`#question${currentQuestion}`);
             currentCard.style.display = 'none';
             
-            currentQuestion += direction;
+            currentQuestion++;
             
             const nextCard = document.querySelector(`#question${currentQuestion}`);
             nextCard.style.display = 'block';
             
             // Update navigation buttons
-            document.getElementById('prevBtn').style.display = currentQuestion > 0 ? 'block' : 'none';
-            document.getElementById('nextBtn').style.display = currentQuestion < totalQuestions - 1 ? 'block' : 'none';
+            document.getElementById('nextBtn').style.display = 'none';
             document.getElementById('submitBtn').style.display = currentQuestion === totalQuestions - 1 ? 'block' : 'none';
             
             // Update progress indicator
@@ -147,8 +137,32 @@ $questions = array_slice($questions, 0, 10);
             document.getElementById('warningMessage').style.display = 'none';
         }
 
+        function validateAndSubmit() {
+            if (!answeredQuestions.has(currentQuestion)) {
+                document.getElementById('warningMessage').style.display = 'block';
+                document.getElementById('warningMessage').scrollIntoView({ behavior: 'smooth' });
+                return;
+            }
+
+            const unansweredQuestions = [];
+            for(let i = 0; i < totalQuestions; i++) {
+                if(!answeredQuestions.has(i)) {
+                    unansweredQuestions.push(i + 1);
+                }
+            }
+
+            if(unansweredQuestions.length > 0) {
+                const warningMsg = document.getElementById('warningMessage');
+                document.getElementById('warningMessage').textContent = 'Please answer all questions before submitting the test.';
+                warningMsg.style.display = 'block';
+                warningMsg.scrollIntoView({ behavior: 'smooth' });
+            } else {
+                document.getElementById('testForm').submit();
+            }
+        }
+
         // Timer functionality
-        let timeLeft = 60 * 60; // 30 minutes in seconds
+        let timeLeft = 60 * 60; // 60 minutes in seconds
         const timerDisplay = document.getElementById('time');
         
         const timer = setInterval(() => {
