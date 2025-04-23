@@ -22,32 +22,44 @@ if ($stmt->fetch()) {
     exit();
 }
 
-// Get total number of questions in the test
-$stmt = $pdo->prepare("SELECT COUNT(*) as total FROM questions");
-$stmt->execute();
-$totalQuestions = $stmt->fetch()['total'];
-
+$student_id = $_SESSION['user_id'];
 $answers = $_POST['answer'] ?? [];
-$score = 0;
 
-// Check each answer
-foreach ($answers as $questionId => $selectedOption) {
-    $stmt = $pdo->prepare("SELECT correct_answer FROM questions WHERE id = ?");
-    $stmt->execute([$questionId]);
-    $question = $stmt->fetch();
-    
-    if ($question && (int)$question['correct_answer'] === (int)$selectedOption) {
-        $score++;
+// Start transaction
+$pdo->beginTransaction();
+
+try {
+    // Store each answer
+    foreach ($answers as $question_id => $answer) {
+        $stmt = $pdo->prepare("INSERT INTO student_answers (student_id, question_id, answer) VALUES (?, ?, ?)");
+        $stmt->execute([$student_id, $question_id, $answer]);
     }
+    
+    // Calculate score
+    $score = 0;
+    $total_questions = count($answers);
+    
+    foreach ($answers as $question_id => $answer) {
+        $stmt = $pdo->prepare("SELECT correct_answer FROM questions WHERE id = ?");
+        $stmt->execute([$question_id]);
+        $question = $stmt->fetch();
+        
+        if ($question && $answer == $question['correct_answer']) {
+            $score++;
+        }
+    }
+    
+    $score_percentage = ($score / $total_questions) * 100;
+    
+    // Store test result
+    $stmt = $pdo->prepare("INSERT INTO test_results (student_id, score, total_questions) VALUES (?, ?, ?)");
+    $stmt->execute([$student_id, $score_percentage, $total_questions]);
+    
+    $pdo->commit();
+    header('Location: student_dashboard.php');
+    exit();
+} catch (Exception $e) {
+    $pdo->rollBack();
+    die("Error: " . $e->getMessage());
 }
-
-// Calculate percentage based on total questions, not just attempted ones
-$percentage = ($score / $totalQuestions) * 100;
-
-// Save the test result
-$stmt = $pdo->prepare("INSERT INTO test_results (student_id, score, total_questions) VALUES (?, ?, ?)");
-$stmt->execute([$_SESSION['user_id'], $percentage, $totalQuestions]);
-
-header('Location: student_dashboard.php');
-exit();
 ?> 
