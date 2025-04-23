@@ -17,10 +17,16 @@ if ($stmt->fetch()) {
     exit();
 }
 
-// Get questions
-$stmt = $pdo->prepare("SELECT * FROM questions ORDER BY RAND() LIMIT 10");
+// Get questions and shuffle them
+$stmt = $pdo->prepare("SELECT * FROM questions");
 $stmt->execute();
 $questions = $stmt->fetchAll();
+
+// Shuffle the questions array
+shuffle($questions);
+
+// Limit to 10 questions
+$questions = array_slice($questions, 0, 10);
 ?>
 
 <!DOCTYPE html>
@@ -50,7 +56,10 @@ $questions = $stmt->fetchAll();
                         <div class="options">
                             <?php
                             $options = json_decode($question['options'], true);
-                            foreach ($options as $key => $option):
+                            // Shuffle the options for each question
+                            $optionKeys = array_keys($options);
+                            shuffle($optionKeys);
+                            foreach ($optionKeys as $key):
                                 $optionId = "q{$question['id']}_{$key}";
                             ?>
                                 <div class="option">
@@ -61,7 +70,7 @@ $questions = $stmt->fetchAll();
                                            onchange="updateProgress(<?php echo $index; ?>)"
                                            required>
                                     <label for="<?php echo $optionId; ?>">
-                                        <?php echo htmlspecialchars($option); ?>
+                                        <?php echo htmlspecialchars($options[$key]); ?>
                                     </label>
                                 </div>
                             <?php endforeach; ?>

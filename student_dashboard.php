@@ -48,15 +48,14 @@ if ($testResult) {
             
             <?php if ($testResult): ?>
                 <div class="test-result">
-                    <h2>Your Test Result</h2>
-                    <p>Score: <?php echo number_format($testResult['score'], 2); ?>%</p>
-                    <p>Correct answers: <?php echo round(($testResult['score'] / 100) * $testResult['total_questions']); ?> out of <?php echo $testResult['total_questions']; ?> questions</p>
-                    
+                    <h2>Thank You!</h2>
+                    <p>You have successfully completed the test.</p>
+                    <p class="score-note">Your results will be announced later.</p>
                 </div>
             <?php else: ?>
-                <div class="start-test">
-                    <h2>Ready to take the test?</h2>
-                    <p>Click the button below to start your examination.</p>
+                <div class="start-test-section">
+                    <h2>Welcome to the Online Test</h2>
+                    <p>Click the button below to start your test.</p>
                     <a href="test.php" class="start-test-btn">Start Test</a>
                 </div>
             <?php endif; ?>
