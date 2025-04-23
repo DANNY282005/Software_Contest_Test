@@ -26,7 +26,7 @@ $questions = $stmt->fetchAll();
 shuffle($questions);
 
 // Limit to 10 questions
-$questions = array_slice($questions, 0, 10);
+$questions = array_slice($questions, 0, 30);
 ?>
 
 <!DOCTYPE html>
